@@ -57,7 +57,7 @@ To maximize efficiency, I utilized **RustScan** to rapidly identify open ports, 
 #### Root Page Analysis
 After identifying an open HTTP service on port 80, I navigated to the target's root IP address. The server displays the standard **Apache2 Ubuntu Default Page**, which confirms the web server is running but does not host any custom content at the root level.
 
-![[apache_default_page.png]]
+![apache_default_page](apache_default_page.png)
 
 
 > [!info] Methodology
@@ -94,19 +94,19 @@ After the automated scan, I manually verified the most interesting paths to conf
 
 Navigating to /content/ confirms the site is running **SweetRice CMS**. This gives us a specific target for known vulnerabilities and exploit research.
 
-![[sweetrice_home.png]]
+![sweetrice_home](sweetrice_home.png)
 
 #### 2. Administrative Login (/content/as/)
 
 The administrative portal was located at /content/as/. This will be our primary target once we obtain valid credentials.
 
-![[admin_login.png]]
+![admin_login](admin_login.png)
 
 #### 3. Information Disclosure (/content/inc/)
 
 Navigating to the /content/inc/ directory confirms that **Directory Listing** is enabled. This allows us to see the backend structure of the CMS, exposing several sensitive files and directories.
 
-![[directory_listing_inc.png]]
+![directory_listing_inc](directory_listing_inc.png)
 
 > [!warning] Key Finding: Database Backup  
 > Inside /content/inc/mysql_backup/, a publicly accessible SQL backup file was discovered: mysql_bakup_20191129023059-1.5.1.sql. This file likely contains sensitive administrative data and credentials.
@@ -115,7 +115,7 @@ Navigating to the /content/inc/ directory confirms that **Directory Listing** is
 
 The directory /content/\_themes/default/ also allows directory listing, revealing the template files used by the CMS (e.g., header.php, footer.php, main.php).
 
-![[directory_listing_themes.png]]
+![directory_listing_themes](directory_listing_themes.png)
 
 > [!tip] Potential RCE Vector  
 > In many CMS platforms like SweetRice, theme files can be edited from the administrative dashboard. This provides a clear path to **Remote Code Execution (RCE)** by injecting a PHP Reverse Shell into one of these template files once authenticated.
@@ -180,7 +180,7 @@ With valid credentials in hand, I navigated back to the administrative login pan
 
 By entering the username `manager` and the cracked password `Password123`, I successfully authenticated and gained access to the CMS backend.
 
-![[sweetrice_dashboard.png]]
+![sweetrice_dashboard](sweetrice_dashboard.png)
 
 > [!info] Dashboard Analysis
 > The dashboard confirms we have full administrative privileges. Exploring the left-hand menu reveals various management options such as *Ads*, *Media Center*, and *Theme*. 
@@ -276,7 +276,7 @@ On my attacker machine, I configured a Metasploit listener to catch the incoming
 #### 3. Upload and Trigger
 I uploaded the `shell.phtml` file via the **Media Center** dashboard. Once uploaded, the file was stored in the `/content/attachment/` directory.
 
-![[media_center.png]]
+![media_center](media_center.png)
 
 I then triggered the execution using `curl`.
 
@@ -309,7 +309,7 @@ Instead of a pre-generated binary, I utilized a manual **PHP Reverse Shell** pay
 3. **Ad Content:** Injected the PHP code snippet above.
 4. **Action:** Clicked **Done** to write the file to the disk.
 
-![[ads.png]]
+![ads](ads.png)
 
 Based on our previous exploit analysis, I know the CMS stores these files in the `/content/inc/ads/` directory.
 
@@ -333,7 +333,7 @@ With the payload successfully injected, I prepared my attacker machine to catch 
 > [!success] Connection Established
 > A reverse shell was successfully received on my Netcat listener, providing initial command-line access as the `www-data` user.
 
-![[nc_connection.png]]
+![nc_connection](nc_connection.png)
 ## 🛠️ Shell Stabilization (TTY Upgrade)
 
 The initial shell obtained via Netcat is "dumb" (non-interactive, no tab completion, no arrow keys). To perform effective post-exploitation, I upgraded it to a fully interactive **TTY shell**.
